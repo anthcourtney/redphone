@@ -5,18 +5,6 @@ require "uri"
 require "json"
 require "cgi"
 
-# Will return the Net::HTTP class if we are not behind a proxy. If we have
-# set ENV['HTTP_PROXY_HOST'] and ENV['HTTP_PROXY_PORT'] then we use an
-# HTTP proxy class that will behave like Net::HTTP but will perform the
-# access through the proxy we've defined.
-def net_http_with_or_without_proxy
-  if !ENV['HTTP_PROXY_HOST'].nil? && !ENV['HTTP_PROXY_PORT'].nil?
-    Net::HTTP::Proxy(ENV['HTTP_PROXY_HOST'], ENV['HTTP_PROXY_PORT'])
-  else
-    Net::HTTP
-  end
-end
-
 def http_request(options={})
   raise "You must supply a URI" if options[:uri].nil?
   method = options[:method] || "get"
@@ -27,7 +15,12 @@ def http_request(options={})
   parameters = options[:parameters] || Hash.new
   body = options[:body]
 
-  http = net_http_with_or_without_proxy.new(uri.host, uri.port)
+  if ENV['HTTP_PROXY_HOST'].nil? || ENV['HTTP_PROXY_PORT'].nil?
+    http = Net::HTTP.new(uri.host, uri.port)
+  else
+    http = Net::HTTP.new(uri.host, uri.port, p_addr = ENV['HTTP_PROXY_HOST'], p_port = ENV['HTTP_PROXY_PORT'])
+  end
+
   if options[:ssl] == true
     http.use_ssl = true
     http.verify_mode = OpenSSL::SSL::VERIFY_NONE
