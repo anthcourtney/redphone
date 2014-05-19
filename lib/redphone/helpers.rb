@@ -10,7 +10,7 @@ require "cgi"
 # HTTP proxy class that will behave like Net::HTTP but will perform the
 # access through the proxy we've defined.
 def net_http_with_or_without_proxy
-  if ENV['HTTP_PROXY_HOST'].present? && ENV['HTTP_PROXY_PORT'].present?
+  if !ENV['HTTP_PROXY_HOST'].nil? && !ENV['HTTP_PROXY_PORT'].nil?
     Net::HTTP::Proxy(ENV['HTTP_PROXY_HOST'], ENV['HTTP_PROXY_PORT'])
   else
     Net::HTTP
